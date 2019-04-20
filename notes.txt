@@ -1,0 +1,60 @@
+My understanding is this is going to be wrapping a lot of `openssl` commands and
+writing to the filesystem. In general, need to work with the Let's Encrypt API
+by figuring out ACME. Creating a CSR, handling challenges, writing files to the
+filesystem. I probably won't try to implement any of the nice features of an
+ACME client like revoking or automating -- at least initially.
+
+I'm unsure if this will require external dependencies. If so, I'd like to use
+`pipenv` to handle that. Need to figure out how to package it up so it can be
+installed.
+
+HTTP challenges are probably the easiest to support.
+
+---
+
+After doing more research & digging into the RFC some more, it seems doable.
+
+Appears that the general strategy is probably going to be doing as little as
+possible
+- user creates their (Let's Encrypt) account key (which format should I use?)
+- user creates the CSR (figure out all the options _required_)
+- user creates the directory for HTTP-01 challenges to go
+
+That seems reasonable in keeping a lean scope while providing something that
+should work.
+
+Looks like diafygi/acme-tiny is probably going to be a good reference. Shares
+a similar scope. Appears to be Python 2 & 3 (?!) -- had no idea you could write
+something across major versions like that. I'll just be doing Python 3. Sort of
+toying with the idea of doing it in Node -- but I feel like I should keep doing
+Python things.
+
+---
+
+This looks useful: https://medium.com/dabbler-in-de-stress/make-linux-cli-tools-756f7f7f06b3
+
+If I want to support wildcard certs I need to use the DNS challenge. This makes
+sense, but I'm unsure how involved the DNS challenge is compared to the HTTP in
+terms of programming. I may default to the HTTP challenge to keep it simple,
+even if that means dropping wildcard certs as a feature.
+
+---
+
+Looks like Click is a solid module to use for the CLI aspect of it.
+
+Example clients:
+- https://github.com/nuxi/acme-tiny (DNS challenge)
+- https://github.com/diafygi/acme-tiny (HTTP challenge)
+- https://github.com/lukas2511/dehydrated
+- https://github.com/RalfJung/lets-encrypt-tiny
+- Where's the JavaScript one I was looking at?
+
+RFCs:
+- ACME 8555
+- JWK 7517
+
+Python:
+- https://able.bio/SamDev14/how-to-structure-a-python-project--685o1o6
+- https://medium.com/ediblesec/turning-python-scripts-into-cli-commands-aecf56dfda18
+- https://realpython.com/python-application-layouts/#command-line-application-layouts
+- https://coderwall.com/p/lt2kew/python-creating-your-project-structure

@@ -9,14 +9,14 @@ Boulder -> Pebble -> Gran(ule) -> Grandma -> Grandma's Cookies
 This is a barebones ACME client created for my Network Security course. The name
 of the game is to get more better at Python 3 and KISS while doing it. Only
 HTTP-01 challenges are used, so no wildcard certificates (those require the
-DNS-challenges). Heavily inspired by other projects such as acme-tiny, I suspeck
+DNS-challenges). Heavily inspired by other projects such as acme-tiny, I suspect
 there will be a lot of parallels between other minimal ACME clients.
 
 ## Install
 
 Developed using Python 3 & pip3 on a macOS environment.
 
-Locally, running `pip install -e .` should get you up and running with the
+Locally, running `pip3 install -e .` should get you up and running with the
 `gran` command available. The only dependency is `click` to make the CLI
 experience pretty slick.
 

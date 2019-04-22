@@ -42,6 +42,31 @@ even if that means dropping wildcard certs as a feature.
 
 Looks like Click is a solid module to use for the CLI aspect of it.
 
+---
+
+Specific helpers I'll need:
+- custom base64 encoding (jose spec)
+- run local command (lots of openssl)
+- send request (uses the JSON-like format)
+- do until whatever (for checking challenges)
+
+Related, but make sure to set the User-Agent to the thing
+- maybe "gran ACME client"?
+
+---
+
+Aha! JOSE == JSON Object Signing & Encryption
+
+f-formatting with strings: https://realpython.com/python-f-strings/
+
+1. Generate account RSA private key (acct.pem)
+   - openssl genrsa 4096 > acct.pem
+
+2. Parse the
+
+
+---
+
 Example clients:
 - https://github.com/nuxi/acme-tiny (DNS challenge)
 - https://github.com/diafygi/acme-tiny (HTTP challenge)
@@ -51,6 +76,7 @@ Example clients:
 
 RFCs:
 - ACME 8555
+- JWS 7515
 - JWK 7517
 
 Python:

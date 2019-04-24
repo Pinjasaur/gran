@@ -74,6 +74,14 @@ f-formatting with strings: https://realpython.com/python-f-strings/
 
 4. register account (or confirm already registered)
 
+5. create order
+
+6. handle challenges for all domains (parse, write, verify, remove)
+
+
+Interesting note: tried `domain.tld`, which does not work as it's not on the
+Public Suffix List? https://publicsuffix.org/
+
 ---
 
 Links & Stuff:

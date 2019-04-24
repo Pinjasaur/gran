@@ -43,13 +43,13 @@ def req (url, data=None, err="req error", depth=0):
 
     return res, code, headers
 
-def signed_req (url, payload, err, depth=0, headers=None, directory=None, alg=None, jwk=None, key=None):
+def signed_req (url, payload, err, depth=0, account_headers=None, directory=None, alg=None, jwk=None, key=None):
     """send signed (authenticated) requests to the ACME server"""
     payload64 = b64(json.dumps(payload).encode("utf-8"))
     nonce = req(directory["newNonce"])[2]["Replay-Nonce"]
 
     protected = {"url": url, "alg": alg, "nonce": nonce}
-    protected.update({"jwk": jwk} if headers is None else {"kid": headers["Location"]})
+    protected.update({"jwk": jwk} if account_headers is None else {"kid": account_headers["Location"]})
 
     protected64 = b64(json.dumps(protected).encode("utf-8"))
     protected_input = f"{protected64}.{payload64}".encode("utf-8")
@@ -110,5 +110,25 @@ def parse_csr (csr):
                 domains.add(san[4:])
     return domains
 
-def get_directory (url):
-    pass
+def do_challenge (authorization, auth_url, domain, thumbprint=None, wk_dir=None, directory=None, alg=None, jwk=None, key=None, account_headers=None):
+    # Find & write the HTTP-01 challenge for the domain (wk == wellknown)
+    challenge = [c for c in authorization["challenges"] if c["type"] == "http-01"][0]
+    token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge["token"])
+    wk_data = "{0}.{1}".format(token, thumbprint)
+    wk_path = os.path.join(wk_dir, token)
+    with open(wk_path, "w") as wk_file:
+        wk_file.write(wk_data)
+
+    # Check the challenge file
+    try:
+        wk_url = f"http://{domain}/.well-known/acme-challenge/{token}"
+        assert req(wk_url)[0] == wk_data
+    except (AssertionError, ValueError) as e:
+        os.remove(wk_path)
+        raise ValueError(f"Wrote file {wk_path}, but couldn't read {wk_url}: {e}")
+
+    # Let ACME know challenge is done
+    signed_req(challenge["url"], {}, f"err submitting challenges: {domain}", directory=directory, alg=alg, jwk=jwk, key=key, account_headers=account_headers)
+    authorization = req_until_not(auth_url, ["pending"], f"error checking challenge status for {domain}")
+    if authorization["status"] != "valid":
+        raise ValueError(f"Challenge did not pass for {domain}: {authorization}")

@@ -57,15 +57,32 @@ Related, but make sure to set the User-Agent to the thing
 
 Aha! JOSE == JSON Object Signing & Encryption
 
+Do I need to do POST-as-GET??
+
 f-formatting with strings: https://realpython.com/python-f-strings/
 
-1. Generate account RSA private key (acct.pem)
-   - openssl genrsa 4096 > acct.pem
+1. Parse account RSA private key (acct.pem)
+    - openssl genrsa 4096 > acct.pem
 
-2. Parse the
+1.5. Generate domain PEM ({{domain}}.pem)
+    - openssl genrsa 4096 > {{domain}}.pem
 
+2. Parse the CSR (domain.csr)
+    - openssl req -new -sha256 -key domain.pem -subj "/CN={{domain}}" > domain.csr
+
+3. get ACME dir
+
+4. register account (or confirm already registered)
 
 ---
+
+Links & Stuff:
+
+Let's Encrypt:
+- Staging: https://letsencrypt.org/docs/staging-environment/
+- Challenges: https://letsencrypt.org/docs/challenge-types/
+- Integration: https://letsencrypt.org/docs/integration-guide/
+- Boulder vs ACME: https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md
 
 Example clients:
 - https://github.com/nuxi/acme-tiny (DNS challenge)

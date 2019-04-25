@@ -58,7 +58,7 @@ def cli (key, csr, dir_, quiet):
 
     log.info("Signing certificate & finalizing order with ACME...")
     csr_der = cmd(["openssl", "req", "-in", csr, "-outform", "DER"], err="error exporting CSR as DER")
-    signed_req(order["finalize"], {"csr": b64(csr_der)}, "Error finalizing order", account_headers=account_headers)
+    signed_req(order["finalize"], {"csr": b64(csr_der)}, "Error finalizing order", directory=directory, alg=alg, jwk=jwk, key=key, account_headers=account_headers)
 
     log.info("Polling ACME for order completion...")
     order = req_until_not(order_headers["Location"], ["pending", "processing"], "Error checking order status")

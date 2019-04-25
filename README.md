@@ -16,14 +16,14 @@ HTTP-01 challenges are used, so no wildcard certificates (those require the
 DNS-challenges). Heavily inspired by other projects such as acme-tiny, I suspect
 there will be a lot of parallels between other minimal ACME clients.
 
-## Process
+## Overview
 
 This automates some of the nitty-gritty parts of issuing a TLS certificate from
 the days of yesteryear(s). You'll still need to run a few `openssl` commands,
 but `gran` does a good chunk of the heavy lifting -- particularly parsing and
 exporting.
 
-The mile-high overview:
+The mile-high overview (for issuing):
 
 1. You provide an account (private) key, CSR, and directory for the challenges
    (text files verified by Let's Encrypt).

@@ -41,12 +41,14 @@ def cli (key, csr, dir_, quiet):
     log.info("Requesting ACME directory...")
     directory, _, _ = req(URL, err="error getting directory")
 
-    # TODO: add ability to update contact details (email)?
+    # TODO: add ability to add/update contact details (email)?
     log.info("Registering account with ACME...")
     # NOTE: First-time `signed_req` is called, `account_headers` is not passed
     # in because there has not been registration/confirmation of registration
     account, code, account_headers = signed_req(directory["newAccount"], {"termsOfServiceAgreed": True}, "error registering", directory=directory, alg=alg, jwk=jwk, key=key)
     log.info("Registered!" if code == 201 else "Already registered!")
+
+    # TODO: add revocation
 
     log.info("Creating a new order with ACME...")
     payload = {"identifiers": [{"type": "dns", "value": d} for d in domains]}
@@ -62,10 +64,10 @@ def cli (key, csr, dir_, quiet):
 
     log.info("Signing certificate & finalizing order with ACME...")
     csr_der = cmd(["openssl", "req", "-in", csr, "-outform", "DER"], err="error exporting CSR as DER")
-    signed_req(order["finalize"], {"csr": b64(csr_der)}, "Error finalizing order", directory=directory, alg=alg, jwk=jwk, key=key, account_headers=account_headers)
+    signed_req(order["finalize"], {"csr": b64(csr_der)}, "error finalizing order", directory=directory, alg=alg, jwk=jwk, key=key, account_headers=account_headers)
 
     log.info("Polling ACME for order completion...")
-    order = req_until_not(order_headers["Location"], ["pending", "processing"], "Error checking order status")
+    order = req_until_not(order_headers["Location"], ["pending", "processing"], "error checking order status")
     if order["status"] != "valid":
         raise ValueError(f"Order failed: {order}")
 

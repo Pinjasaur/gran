@@ -68,7 +68,7 @@ f-formatting with strings: https://realpython.com/python-f-strings/
     - openssl genrsa 4096 > {{domain}}.pem
 
 2. Parse the CSR (domain.csr)
-    - openssl req -new -sha256 -key domain.pem -subj "/CN={{domain}}" > domain.csr
+    - openssl req -new -sha256 -key {{domain}}.pem -subj "/CN={{domain}}" > domain.csr
 
 3. get ACME dir
 
@@ -78,9 +78,21 @@ f-formatting with strings: https://realpython.com/python-f-strings/
 
 6. handle challenges for all domains (parse, write, verify, remove)
 
+7. finalize order w/ ACME
+
 
 Interesting note: tried `domain.tld`, which does not work as it's not on the
 Public Suffix List? https://publicsuffix.org/
+
+I'll just roll with ee4723.rocks for this assignment.
+
+Created a simple Python server for the local challenges: `./server.sh`
+
+Using some symlink magic:
+  - mkdir -p challenges/.well-known
+  - ln -s $(pwd)/challenges $(pwd)/challenges/.well-known/acme-challenge
+
+This way, a server out of challenges/ will resolve the requests.
 
 ---
 

@@ -1,7 +1,10 @@
 # Python
-__pycache__
-*.egg-info
+__pycache__/
+*.egg-info/
 
 # Ignore any PEM or CSR files
 *.pem
 *.csr
+
+# Ignore challenges
+/challenges/

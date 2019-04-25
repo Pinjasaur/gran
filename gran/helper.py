@@ -1,4 +1,4 @@
-import base64, binascii, subprocess, time, re, hashlib, json
+import base64, binascii, subprocess, time, re, hashlib, json, os
 from urllib.request import urlopen, Request
 
 def b64 (s):
@@ -9,7 +9,7 @@ def unhex (s, enc="utf-8"):
     """convert hex to bin"""
     return binascii.unhexlify(s.encode(enc))
 
-def exec (cmds, stdin=None, cmd_input=None, err="exec error"):
+def cmd (cmds, stdin=None, cmd_input=None, err="exec error"):
     """exec a local (external) CLI command"""
     proc = subprocess.Popen(cmds, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate(cmd_input)
@@ -54,7 +54,7 @@ def signed_req (url, payload, err, depth=0, account_headers=None, directory=None
     protected64 = b64(json.dumps(protected).encode("utf-8"))
     protected_input = f"{protected64}.{payload64}".encode("utf-8")
 
-    out = exec(["openssl", "dgst", "-sha256", "-sign", key], stdin=subprocess.PIPE, cmd_input=protected_input, err="openssl error")
+    out = cmd(["openssl", "dgst", "-sha256", "-sign", key], stdin=subprocess.PIPE, cmd_input=protected_input, err="OpenSSL error")
     data = json.dumps({"protected": protected64, "payload": payload64, "signature": b64(out)})
 
     try:
@@ -70,11 +70,11 @@ def req_until_not (url, statuses, err):
         if res["status"] in statuses:
             time.sleep(2)
             continue
-    return res
+        return res
 
 def parse_pem (key):
     """parse the (account) PEM to get"""
-    out = exec(["openssl", "rsa", "-in", key, "-noout", "-text"], err="openssl error")
+    out = cmd(["openssl", "rsa", "-in", key, "-noout", "-text"], err="OpenSSL error")
     pattern = r"modulus:\n\s+00:([a-f0-9\:\s]+?)\npublicExponent: ([0-9]+)"
     pub_hex, pub_exp = re.search(pattern, out.decode("utf-8"), re.MULTILINE|re.DOTALL).groups()
     pub_exp = "{0:x}".format(int(pub_exp))
@@ -94,7 +94,7 @@ def parse_pem (key):
 
 def parse_csr (csr):
     """parse the CSR to find all domains"""
-    out = exec(["openssl", "req", "-in", csr, "-noout", "-text"], err=f"error loading {csr}")
+    out = cmd(["openssl", "req", "-in", csr, "-noout", "-text"], err=f"error loading {csr}")
     domains = set([])
     # Find Common Name in CSR
     cn = re.search(r"Subject:.*? CN\s?=\s?([^\s,;/]+)", out.decode("utf-8"))
@@ -108,9 +108,11 @@ def parse_csr (csr):
         for san in sans.group(1).split(", "):
             if san.startswith("DNS:"):
                 domains.add(san[4:])
+
     return domains
 
-def do_challenge (authorization, auth_url, domain, thumbprint=None, wk_dir=None, directory=None, alg=None, jwk=None, key=None, account_headers=None):
+def do_challenge (authorization, auth_url, domain, thumbprint=None, wk_dir=None, directory=None, alg=None, jwk=None, key=None, account_headers=None, log=None):
+    """handle challenges for each domain"""
     # Find & write the HTTP-01 challenge for the domain (wk == wellknown)
     challenge = [c for c in authorization["challenges"] if c["type"] == "http-01"][0]
     token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge["token"])
@@ -127,8 +129,15 @@ def do_challenge (authorization, auth_url, domain, thumbprint=None, wk_dir=None,
         os.remove(wk_path)
         raise ValueError(f"Wrote file {wk_path}, but couldn't read {wk_url}: {e}")
 
-    # Let ACME know challenge is done
+    # Let ACME know challenge is ready
+    log.info("Letting ACME know challenge is ready...")
     signed_req(challenge["url"], {}, f"err submitting challenges: {domain}", directory=directory, alg=alg, jwk=jwk, key=key, account_headers=account_headers)
+
+    # Poll ACME for challenge
+    log.info("Polling ACME for challenge status...")
     authorization = req_until_not(auth_url, ["pending"], f"error checking challenge status for {domain}")
     if authorization["status"] != "valid":
+        # os.remove(wk_path)
         raise ValueError(f"Challenge did not pass for {domain}: {authorization}")
+
+    return wk_path

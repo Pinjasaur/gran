@@ -16,10 +16,11 @@ log.setLevel(logging.INFO)
 @click.option("--csr", help="CSR file for domain(s)", required=True)
 @click.option("--dir", "dir_", help="path for ACME challenges", required=True)
 @click.option("--quiet", help="supress non-essential output", is_flag=True)
-# TODO: add option for --dry or --check --test --try (default to prod)
-def cli (key, csr, dir_, quiet):
+@click.option("--test", help="use the Let's Encrypt staging API", is_flag=True)
+def cli (key, csr, dir_, quiet, test):
     """Get a TLS certificate via (Let's Encrypt) ACME."""
-    URL = ACME_STAG_URL
+    # Set the correct ACME endpoint
+    ACME_URL = ACME_STAG_URL if test else ACME_PROD_URL
 
     # Ignore info-level logging if `--quiet` is passed
     if quiet:
@@ -33,7 +34,7 @@ def cli (key, csr, dir_, quiet):
     log.info(f"Domains found: {', '.join(domains)}")
 
     log.info("Requesting ACME directory...")
-    directory, _, _ = req(URL, err="error getting directory")
+    directory, _, _ = req(ACME_URL, err="error getting directory")
 
     log.info("Registering account with ACME...")
     # NOTE: First-time `signed_req` is called, `account_headers` is not passed

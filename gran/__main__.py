@@ -1,4 +1,4 @@
-import click, logging
+import click, logging, sys
 
 from .helper import parse_pem, parse_csr, req, signed_req, do_challenge, cmd, \
                     b64, req_until_not
@@ -12,15 +12,20 @@ log.addHandler(logging.StreamHandler())
 log.setLevel(logging.INFO)
 
 @click.command()
-@click.option("-k", "--key", required=True, help="account key PEM file")
-@click.option("-c", "--csr", required=True, help="CSR file for domain(s)")
-@click.option("-d", "--dir", "dir_", required=True, help="path for ACME challenges")
+@click.option("--key", help="account key PEM file")
+@click.option("--csr", help="CSR file for domain(s)")
+@click.option("--dir", "dir_", help="path for ACME challenges")
 @click.option("--quiet", help="supress non-essential output", is_flag=True)
 # TODO: add option for --dry (default to prod)
 # TODO: add option for --revoke -ing? (requires a --cert too)
 def cli (key, csr, dir_, quiet):
     """Get a TLS certificate via (Let's Encrypt) ACME."""
     URL = ACME_STAG_URL
+
+    # Everything required to issue a certificate
+    if key is None and csr is None and dir_ is None:
+        log.error("Account PEM, CSR, and ACME directory required. Try --help.")
+        sys.exit(1)
 
     # Ignore info-level logging if `--quiet` is passed
     if quiet:
@@ -47,7 +52,6 @@ def cli (key, csr, dir_, quiet):
     payload = {"identifiers": [{"type": "dns", "value": d} for d in domains]}
     order, _, order_headers = signed_req(directory["newOrder"], payload, "error creating new order", directory=directory, alg=alg, jwk=jwk, key=key, account_headers=account_headers)
 
-    # TODO: remove the challenge file after finalizing the order
     for auth_url in order["authorizations"]:
         authorization, _, _ = req(auth_url, err="error getting challenges")
         domain = authorization["identifier"]["value"]
@@ -65,6 +69,8 @@ def cli (key, csr, dir_, quiet):
     if order["status"] != "valid":
         raise ValueError(f"Order failed: {order}")
 
+    # Clean up challenge
+    os.remove(wk_path)
     log.info("Certificate signed, downloading...")
     fullchain, _, _ = req(order["certificate"], err="certificate download failed")
     print(fullchain, end="")

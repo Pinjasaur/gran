@@ -1,4 +1,4 @@
-import click, logging, sys
+import click, logging, os
 
 from .helper import parse_pem, parse_csr, req, signed_req, do_challenge, cmd, \
                     b64, req_until_not
@@ -12,20 +12,14 @@ log.addHandler(logging.StreamHandler())
 log.setLevel(logging.INFO)
 
 @click.command()
-@click.option("--key", help="account key PEM file")
-@click.option("--csr", help="CSR file for domain(s)")
-@click.option("--dir", "dir_", help="path for ACME challenges")
+@click.option("--key", help="account key PEM file", required=True)
+@click.option("--csr", help="CSR file for domain(s)", required=True)
+@click.option("--dir", "dir_", help="path for ACME challenges", required=True)
 @click.option("--quiet", help="supress non-essential output", is_flag=True)
 # TODO: add option for --dry or --check --test --try (default to prod)
-# TODO: add option for --revoke -ing? (requires a --cert too)
 def cli (key, csr, dir_, quiet):
     """Get a TLS certificate via (Let's Encrypt) ACME."""
     URL = ACME_STAG_URL
-
-    # Everything required to issue a certificate
-    if key is None and csr is None and dir_ is None:
-        log.error("Account PEM, CSR, and ACME directory required. Try --help.")
-        sys.exit(1)
 
     # Ignore info-level logging if `--quiet` is passed
     if quiet:
@@ -41,14 +35,11 @@ def cli (key, csr, dir_, quiet):
     log.info("Requesting ACME directory...")
     directory, _, _ = req(URL, err="error getting directory")
 
-    # TODO: add ability to add/update contact details (email)?
     log.info("Registering account with ACME...")
     # NOTE: First-time `signed_req` is called, `account_headers` is not passed
     # in because there has not been registration/confirmation of registration
     account, code, account_headers = signed_req(directory["newAccount"], {"termsOfServiceAgreed": True}, "error registering", directory=directory, alg=alg, jwk=jwk, key=key)
     log.info("Registered!" if code == 201 else "Already registered!")
-
-    # TODO: add revocation
 
     log.info("Creating a new order with ACME...")
     payload = {"identifiers": [{"type": "dns", "value": d} for d in domains]}

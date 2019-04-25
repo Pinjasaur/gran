@@ -14,7 +14,8 @@ This is a barebones ACME client created for my Network Security course. The name
 of the game is to get more better at Python 3 and KISS while doing it. Only
 HTTP-01 challenges are used, so no wildcard certificates (those require the
 DNS-challenges). Heavily inspired by other projects such as acme-tiny, I suspect
-there will be a lot of parallels between other minimal ACME clients.
+there will be a lot of parallels between other minimal ACME clients. Revoking is
+not supported.
 
 ## Overview
 
@@ -89,6 +90,8 @@ gran --key acct.pem --csr {{domain}}.csr --dir /var/www/challenges > fullchain.p
 ```
 
 which will provide you with the certificate.
+
+You can also pass `--quiet` to suppress extra output.
 
 ## Should I Use This?
 

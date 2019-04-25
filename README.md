@@ -93,6 +93,10 @@ which will provide you with the certificate.
 
 You can also pass `--quiet` to suppress extra output.
 
+If you want to _test_ by running against the Let's Encrypt staging API, you can
+pass `--test` to do so. You'll still receive the fullchain certificate, but it
+will be issued by a bogus CA ("Fake LE").
+
 ## Should I Use This?
 
 Probably not. Here's a non-exhasutive list of probably better options:

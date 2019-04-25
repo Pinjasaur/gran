@@ -23,7 +23,6 @@ def cli (key, csr, dir_, quiet):
     URL = ACME_STAG_URL
 
     # Ignore info-level logging if `--quiet` is passed
-    print(type(quiet))
     if quiet:
         log.setLevel(logging.ERROR)
 

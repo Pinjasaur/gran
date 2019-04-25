@@ -1,8 +1,12 @@
-# gran
+<h1 align="center">
+  <img width="320" src=".github/logo.png" alt="gran">
+</h1>
+
+[![forthebadge](https://forthebadge.com/images/badges/built-with-grammas-recipe.svg)](https://forthebadge.com)
 
 A bite-sized ACME client for Let's Encrypt.
 
-Boulder -> Pebble -> Gran(ule) -> Grandma -> Grandma's Cookies
+Boulder -> Pebble -> Gran(ule) -> Grandma -> Grandma's Cookies :cookie:
 
 ## Features
 

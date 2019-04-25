@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img width="320" src=".github/logo.png" alt="gran">
+  <img src=".github/logo.png" alt="gran">
 </h1>
 
 [![forthebadge](https://forthebadge.com/images/badges/built-with-grammas-recipe.svg)](https://forthebadge.com)
@@ -23,6 +23,14 @@ Developed using Python 3 & pip3 on a macOS environment.
 Locally, running `pip3 install -e .` should get you up and running with the
 `gran` command available. The only dependency is `click` to make the CLI
 experience pretty slick.
+
+## Should I Use This?
+
+Probably not. Here's a non-exhasutive list of probably better options:
+- https://github.com/nuxi/acme-tiny (DNS challenge)
+- https://github.com/diafygi/acme-tiny (HTTP challenge)
+- https://github.com/lukas2511/dehydrated
+- https://github.com/RalfJung/lets-encrypt-tiny
 
 ## License
 

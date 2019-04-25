@@ -50,7 +50,7 @@ def cli (key, csr, dir_, quiet):
     # TODO: remove the challenge file after finalizing the order
     for auth_url in order["authorizations"]:
         authorization, _, _ = req(auth_url, err="error getting challenges")
-        domain = authorization['identifier']['value']
+        domain = authorization["identifier"]["value"]
 
         log.info(f"Creating challenge for {domain}...")
         wk_path = do_challenge(authorization, auth_url, domain, thumbprint=thumbprint, wk_dir=dir_, directory=directory, alg=alg, jwk=jwk, key=key, account_headers=account_headers, log=log)
@@ -58,10 +58,10 @@ def cli (key, csr, dir_, quiet):
 
     log.info("Signing certificate & finalizing order with ACME...")
     csr_der = cmd(["openssl", "req", "-in", csr, "-outform", "DER"], err="error exporting CSR as DER")
-    signed_req(order["finalize"], {"csr": b64(csr_der)}, "Error finalizing order")
+    signed_req(order["finalize"], {"csr": b64(csr_der)}, "Error finalizing order", account_headers=account_headers)
 
     log.info("Polling ACME for order completion...")
-    order = req_until_not(order_headers['Location'], ["pending", "processing"], "Error checking order status")
+    order = req_until_not(order_headers["Location"], ["pending", "processing"], "Error checking order status")
     if order["status"] != "valid":
         raise ValueError(f"Order failed: {order}")
 

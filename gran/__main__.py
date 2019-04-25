@@ -56,15 +56,15 @@ def cli (key, csr, dir_, quiet):
         wk_path = do_challenge(authorization, auth_url, domain, thumbprint=thumbprint, wk_dir=dir_, directory=directory, alg=alg, jwk=jwk, key=key, account_headers=account_headers, log=log)
         log.info(f"{domain} verified!")
 
-    info.log("Signing certificate & finalizing order with ACME...")
+    log.info("Signing certificate & finalizing order with ACME...")
     csr_der = cmd(["openssl", "req", "-in", csr, "-outform", "DER"], err="error exporting CSR as DER")
     signed_req(order["finalize"], {"csr": b64(csr_der)}, "Error finalizing order")
 
-    info.log("Polling ACME for order completion...")
+    log.info("Polling ACME for order completion...")
     order = req_until_not(order_headers['Location'], ["pending", "processing"], "Error checking order status")
     if order["status"] != "valid":
         raise ValueError(f"Order failed: {order}")
 
-    info.log("Certificate signed, downloading...")
+    log.info("Certificate signed, downloading...")
     fullchain, _, _ = req(order["certificate"], err="certificate download failed")
     print(fullchain, end="")

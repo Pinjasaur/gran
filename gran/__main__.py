@@ -16,7 +16,7 @@ log.setLevel(logging.INFO)
 @click.option("--csr", help="CSR file for domain(s)")
 @click.option("--dir", "dir_", help="path for ACME challenges")
 @click.option("--quiet", help="supress non-essential output", is_flag=True)
-# TODO: add option for --dry (default to prod)
+# TODO: add option for --dry or --check --test --try (default to prod)
 # TODO: add option for --revoke -ing? (requires a --cert too)
 def cli (key, csr, dir_, quiet):
     """Get a TLS certificate via (Let's Encrypt) ACME."""

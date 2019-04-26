@@ -96,6 +96,26 @@ This way, a server out of challenges/ will resolve the requests.
 
 ---
 
+demo flow:
+
+run:
+cd /var/www/kitisthe.best/repo
+openssl genrsa 4096 > acct.pem
+openssl genrsa 4096 > domain.pem
+openssl req -new -sha256 -key domain.pem -subj "/CN=kitisthe.best" > domain.csr
+explain:
+gran --key acct.pem --csr domain.csr --dir /var/www/challenges > fullchain.pem
+edit:
+sudo vim /etc/nginx/sites-enabled/kitisthe.best
+run:
+sudo nginx -t && sudo systemctl reload nginx
+
+It works!
+show cert:
+openssl crl2pkcs7 -nocrl -certfile fullchain.pem | openssl pkcs7 -print_certs -noout
+
+---
+
 Links & Stuff:
 
 Let's Encrypt:
